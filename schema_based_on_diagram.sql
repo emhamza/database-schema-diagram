@@ -42,3 +42,27 @@ CREATE TABLE Invoice_Items (
   FOREIGN KEY (invoice_id) REFERENCES Invoices(id),
   FOREIGN KEY (treatment_id) REFERENCES Treatments(id)
 );
+
+-- Create join table for patient and treatments (many-to-many relationship)
+CREATE TABLE Patient_Treatments (
+  patient_id INT,
+  treatment_id INT,
+  PRIMARY KEY (patient_id, treatment_id),
+  FOREIGN KEY (patient_id) REFERENCES Patient(id),
+  FOREIGN KEY (treatment_id) REFERENCES Treatments(id)
+);
+
+-- Create join table for medical_histories and treatments (many-to-many relationship)
+CREATE TABLE Medical_History_Treatments (
+  medical_history_id INT,
+  treatment_id INT,
+  PRIMARY KEY (medical_history_id, treatment_id),
+  FOREIGN KEY (medical_history_id) REFERENCES Medical_Histories(id),
+  FOREIGN KEY (treatment_id) REFERENCES Treatments(id)
+);
+
+-- Add indexes for foreign keys
+CREATE INDEX idx_patient_treatments_patient_id ON Patient_Treatments (patient_id);
+CREATE INDEX idx_patient_treatments_treatment_id ON Patient_Treatments (treatment_id);
+CREATE INDEX idx_medical_history_treatments_medical_history_id ON Medical_History_Treatments (medical_history_id);
+CREATE INDEX idx_medical_history_treatments_treatment_id ON Medical_History_Treatments (treatment_id);
