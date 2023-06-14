@@ -1,7 +1,7 @@
 -- Table: Patient
 CREATE TABLE Patient (
   id INT PRIMARY KEY,
-  name VARCHAR(100),
+  name VARCHAR(255),
   date_of_birth DATE
 );
 
@@ -10,26 +10,43 @@ CREATE TABLE Medical_Histories (
   id INT PRIMARY KEY,
   admitted_at TIMESTAMP,
   patient_id INT,
-  status VARCHAR(100),
-  FOREIGN KEY (patient_id) REFERENCES Patient(id)
+  status VARCHAR(50),
+  CONSTRAINT fk_patient_id FOREIGN KEY (patient_id) REFERENCES Patient(id)
 );
 
--- Table: Invoices
-CREATE TABLE Invoices (
-  id INT PRIMARY KEY,
-  total_amount DECIMAL(10, 2),
-  generated_at TIMESTAMP,
-  payed_at TIMESTAMP,
-  medical_history_id INT,
-  FOREIGN KEY (medical_history_id) REFERENCES Medical_Histories(id)
-);
+CREATE INDEX idx_patient_id ON Patient(id);
 
 -- Table: Treatments
 CREATE TABLE Treatments (
   id INT PRIMARY KEY,
-  type VARCHAR(100),
-  name VARCHAR(100)
+  type VARCHAR(255),
+  name VARCHAR(255)
 );
+
+-- Table: Medical_History_Treatments (for many-to-many relationship)
+CREATE TABLE Medical_History_Treatments (
+  id INT PRIMARY KEY,  
+  medical_history_id INT,
+  treatment_id INT,
+  CONSTRAINT fk_medical_history_id FOREIGN KEY (medical_history_id) REFERENCES Medical_Histories(id),
+  CONSTRAINT fk_treatment_history_id FOREIGN KEY (treatment_id) REFERENCES Treatments(id)
+);
+
+
+CREATE INDEX idx_treatment_history ON Medical_History_Treatments (treatment_id, medical_history_id)
+
+-- Table: Invoices
+CREATE TABLE Invoices (
+  id INT PRIMARY KEY,
+  total_amount DECIMAL,
+  generated_at TIMESTAMP,
+  payed_at TIMESTAMP,
+  medical_history_id INT,
+  CONSTRAINT fk_medical_history_id FOREIGN KEY (medical_history_id) REFERENCES Medical_Histories(id)
+);
+
+
+CREATE INDEX idx_invoice_medical_history_id ON Invoices (medical_history_id);
 
 -- Table: Invoice_Items
 CREATE TABLE Invoice_Items (
@@ -39,22 +56,9 @@ CREATE TABLE Invoice_Items (
   total_price DECIMAL(10, 2),
   invoice_id INT,
   treatment_id INT,
-  FOREIGN KEY (invoice_id) REFERENCES Invoices(id),
-  FOREIGN KEY (treatment_id) REFERENCES Treatments(id)
+  CONSTRAINT fk_invoice_id FOREIGN KEY (invoice_id) REFERENCES Invoices(id),
+  CONSTRAINT fk_treatment_id FOREIGN KEY (treatment_id) REFERENCES Treatments(id)
 );
 
--- Table: Medical_History_Treatments (for many-to-many relationship)
-CREATE TABLE Medical_History_Treatments (
-  medical_history_id INT,
-  treatment_id INT,
-  FOREIGN KEY (medical_history_id) REFERENCES Medical_Histories(id),
-  FOREIGN KEY (treatment_id) REFERENCES Treatments(id)
-);
 
--- Add indexes for foreign keys
-CREATE INDEX ON Medical_Histories (patient_id);
-CREATE INDEX ON Invoices (medical_history_id);
-CREATE INDEX ON Invoice_Items (invoice_id);
-CREATE INDEX ON Invoice_Items (treatment_id);
-CREATE INDEX ON Medical_History_Treatments (medical_history_id);
-CREATE INDEX ON Medical_History_Treatments (treatment_id);
+CREATE INDEX idx_invoice_items ON Invoice_Items(invoice_id, treatment_id);
